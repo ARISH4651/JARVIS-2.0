@@ -6,19 +6,31 @@ from livekit.plugins import (
     noise_cancellation,
 )
 from livekit.plugins import google
-load_dotenv(".env.local")
+from prompts import AGENT_INSTRUCTION, SESSION_INSTRUCTION
+from tools import get_weather , web_search
+load_dotenv()
+
 
 
 class Assistant(Agent):
     def __init__(self) -> None:
-        super().__init__(instructions="You are a helpful voice AI assistant.")
+        super().__init__(
+            instructions=AGENT_INSTRUCTION,
+            llm=google.beta.realtime.RealtimeModel(
+            voice="Aoede",
+            temperature=0.8,
+        ), 
+        tools=[
+            get_weather,
+            web_search,
+        ],
+        
+        )
 
 
 async def entrypoint(ctx: agents.JobContext):
     session = AgentSession(
-        llm=google.beta.realtime.RealtimeModel(
-            voice="charon",
-        )
+        
     )
 
     await session.start(
@@ -26,12 +38,13 @@ async def entrypoint(ctx: agents.JobContext):
         agent=Assistant(),
         room_input_options=RoomInputOptions(
             # For telephony applications, use `BVCTelephony` instead for best results
+            video_enabled=True,
             noise_cancellation=noise_cancellation.BVC(),
         ),
     )
 
     await session.generate_reply(
-        instructions="Greet the user and offer your assistance. You should start by speaking in English."
+        instructions=SESSION_INSTRUCTION
     )
 
 
