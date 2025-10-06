@@ -42,6 +42,7 @@ async def entrypoint(ctx: agents.JobContext):
             noise_cancellation=noise_cancellation.BVC(),
         ),
     )
+    
 
     await session.generate_reply(
         instructions=SESSION_INSTRUCTION
